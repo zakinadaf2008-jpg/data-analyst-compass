@@ -1,39 +1,29 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
-  LayoutDashboard,
-  Map,
-  BookOpen,
-  Library,
-  FolderKanban,
-  Briefcase,
-  Home,
-  Sparkles,
+  LayoutDashboard, Map, BookOpen, Library, FolderKanban, Briefcase, Home, Sparkles, MessageSquare, LogOut, LogIn,
 } from "lucide-react";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarFooter,
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
+  SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter,
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/hooks/use-auth";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
   { title: "Home", url: "/", icon: Home },
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Roadmap", url: "/roadmap", icon: Map },
   { title: "Courses", url: "/courses", icon: BookOpen },
+  { title: "AI Tutor", url: "/chat", icon: MessageSquare },
   { title: "Resources", url: "/resources", icon: Library },
   { title: "Projects", url: "/projects", icon: FolderKanban },
   { title: "Career", url: "/career", icon: Briefcase },
-];
+] as const;
 
 export function AppSidebar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <Sidebar collapsible="icon">
@@ -55,7 +45,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={path === item.url}>
+                  <SidebarMenuButton asChild isActive={path === item.url || path.startsWith(item.url + "/")}>
                     <Link to={item.url}>
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
@@ -68,9 +58,19 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <div className="glass-card rounded-lg p-3 text-xs group-data-[collapsible=icon]:hidden">
-          <p className="font-semibold gradient-text mb-1">Streak: 7 days</p>
-          <p className="text-muted-foreground">Keep learning daily!</p>
+        <div className="group-data-[collapsible=icon]:hidden">
+          {user ? (
+            <div className="glass-card rounded-lg p-3 text-xs space-y-2">
+              <p className="font-medium truncate">{user.email}</p>
+              <Button size="sm" variant="outline" className="w-full" onClick={() => signOut()}>
+                <LogOut className="h-3 w-3" /> Sign out
+              </Button>
+            </div>
+          ) : (
+            <Button size="sm" className="w-full bg-gradient-to-r from-primary to-accent" onClick={() => navigate({ to: "/login" })}>
+              <LogIn className="h-3 w-3" /> Sign in
+            </Button>
+          )}
         </div>
       </SidebarFooter>
     </Sidebar>
