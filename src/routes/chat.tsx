@@ -1,22 +1,20 @@
-import { createFileRoute, Outlet, Link, useNavigate, useParams, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
-import { Plus, MessageSquare, Trash2 } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Plus, MessageSquare, Trash2, Lock, LogIn } from "lucide-react";
 import { listThreads, createThread, deleteThread } from "@/lib/chat.functions";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/chat")({
   head: () => ({ meta: [{ title: "AI Tutor — Data Analyst Compass" }] }),
-  beforeLoad: async () => {
-    const { data } = await supabase.auth.getUser();
-    if (!data.user) throw redirect({ to: "/login" });
-  },
   component: ChatLayout,
 });
 
 function ChatLayout() {
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const params = useParams({ strict: false }) as { threadId?: string };
@@ -26,8 +24,38 @@ function ChatLayout() {
 
   const { data: threads = [] } = useQuery({
     queryKey: ["threads"],
+    enabled: !!user,
     queryFn: () => fetchThreads(),
   });
+
+  if (loading) {
+    return <AppLayout><div className="p-8 text-sm text-muted-foreground">Loading…</div></AppLayout>;
+  }
+
+  if (!user) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-[60vh] px-4">
+          <Card className="glass-card max-w-md w-full p-8 text-center space-y-4">
+            <div className="h-14 w-14 mx-auto rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+              <Lock className="h-7 w-7 text-primary-foreground" />
+            </div>
+            <h1 className="text-2xl font-bold gradient-text">Sign in to use AI Tutor</h1>
+            <p className="text-sm text-muted-foreground">
+              Your chat threads are saved to your account so you can pick up conversations from any device.
+              The rest of the site (Roadmap, Courses, Resources…) is free to browse without signing in.
+            </p>
+            <Button
+              onClick={() => navigate({ to: "/login" })}
+              className="w-full bg-gradient-to-r from-primary to-accent"
+            >
+              <LogIn className="h-4 w-4" /> Sign in or create account
+            </Button>
+          </Card>
+        </div>
+      </AppLayout>
+    );
+  }
 
   const newChat = async () => {
     const t = await createFn();
