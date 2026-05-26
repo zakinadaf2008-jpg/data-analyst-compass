@@ -259,16 +259,16 @@ function CoursesPage() {
                 </div>
                 <ul className="divide-y divide-border/40">
                   {active.lessons.map((l, i) => {
-                    const key = `${active.id}-${l.id}`;
                     const isActive = l.id === currentLesson.id;
+                    const isDone = completedSet.has(l.id);
                     return (
                       <li key={l.id}>
                         <button
                           onClick={() => setCurrentLesson(l)}
                           className={`w-full text-left p-3 flex gap-3 items-start hover:bg-muted/40 transition ${isActive ? "bg-primary/10" : ""}`}
                         >
-                          <div className={`h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-xs font-medium ${isActive ? "bg-gradient-to-br from-primary to-accent text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                            {completed[key] ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
+                          <div className={`h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-xs font-medium ${isActive ? "bg-gradient-to-br from-primary to-accent text-primary-foreground" : isDone ? "bg-emerald-500/20 text-emerald-300" : "bg-muted text-muted-foreground"}`}>
+                            {isDone ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
                           </div>
                           <div className="min-w-0">
                             <p className="text-sm font-medium truncate">{l.title}</p>
