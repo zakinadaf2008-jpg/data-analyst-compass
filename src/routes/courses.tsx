@@ -49,7 +49,18 @@ function CoursesPage() {
   const [q, setQ] = useState("");
   const [active, setActive] = useState<Course | null>(null);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
-  const [completed, setCompleted] = useState<Record<string, boolean>>({});
+
+  const { user } = useAuth();
+  const { data: progress = [] } = useLessonProgress();
+  const { data: bookmarks = [] } = useBookmarks();
+  const completeLesson = useCompleteLesson();
+  const toggleBookmark = useToggleBookmark();
+
+  const completedSet = useMemo(() => new Set(progress.map((p) => p.lesson_id)), [progress]);
+  const bookmarkedCourses = useMemo(
+    () => new Set(bookmarks.filter((b) => b.kind === "course").map((b) => b.target_id)),
+    [bookmarks],
+  );
 
   const { data: courses = [], isLoading } = useQuery({
     queryKey: ["courses-public"],
@@ -80,8 +91,33 @@ function CoursesPage() {
     setCurrentLesson(c.lessons[0] ?? null);
   };
 
-  const toggleComplete = (key: string) => {
-    setCompleted((prev) => ({ ...prev, [key]: !prev[key] }));
+  const handleComplete = async (courseId: string, lessonId: string) => {
+    if (!user) {
+      toast.error("Sign in to track progress");
+      return;
+    }
+    if (completedSet.has(lessonId)) return;
+    try {
+      const stats: any = await completeLesson.mutateAsync({ lessonId, courseId });
+      toast.success(
+        <span className="flex items-center gap-2">
+          <Flame className="h-4 w-4 text-orange-400" />
+          +10 XP · {stats?.current_streak ?? 1} day streak
+        </span> as any,
+      );
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to save");
+    }
+  };
+
+  const handleBookmark = async (courseId: string) => {
+    if (!user) {
+      toast.error("Sign in to bookmark");
+      return;
+    }
+    const on = !bookmarkedCourses.has(courseId);
+    await toggleBookmark.mutateAsync({ kind: "course", targetId: courseId, on });
+    toast.success(on ? "Bookmarked" : "Removed bookmark");
   };
 
   return (
