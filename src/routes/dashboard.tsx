@@ -1,16 +1,19 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Flame, Target, BookOpen, Trophy, TrendingUp, Clock, Plus,
+  Flame, Target, BookOpen, Trophy, TrendingUp, Clock, BookMarked,
 } from "lucide-react";
 import {
   AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip,
   BarChart, Bar, CartesianGrid,
 } from "recharts";
+import { useAuth } from "@/hooks/use-auth";
+import { useUserStats, useLessonProgress, useBookmarks } from "@/hooks/use-progress";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
