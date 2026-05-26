@@ -26,23 +26,9 @@ export const Route = createFileRoute("/dashboard")({
   component: DashboardPage,
 });
 
-const weekly = [
-  { day: "Mon", hrs: 1.5 }, { day: "Tue", hrs: 2.2 }, { day: "Wed", hrs: 0.8 },
-  { day: "Thu", hrs: 2.5 }, { day: "Fri", hrs: 1.8 }, { day: "Sat", hrs: 3.2 }, { day: "Sun", hrs: 2.1 },
-];
 const skills = [
   { name: "SQL", v: 78 }, { name: "Python", v: 62 }, { name: "Excel", v: 90 },
   { name: "Stats", v: 55 }, { name: "Viz", v: 45 }, { name: "ML", v: 22 },
-];
-const completed = [
-  { title: "SQL JOINS Deep Dive", time: "2h ago", stage: "SQL" },
-  { title: "Pandas DataFrames", time: "Yesterday", stage: "Python" },
-  { title: "Hypothesis Testing", time: "2 days ago", stage: "Stats" },
-];
-const recommended = [
-  { title: "Window Functions", duration: "45 min", stage: "SQL" },
-  { title: "NumPy Arrays", duration: "1h 10m", stage: "Python" },
-  { title: "Power BI Intro", duration: "1h 30m", stage: "Visualization" },
 ];
 
 function DashboardPage() {
