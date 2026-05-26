@@ -46,28 +46,54 @@ const recommended = [
 ];
 
 function DashboardPage() {
+  const { user } = useAuth();
+  const { data: stats } = useUserStats();
+  const { data: progress = [] } = useLessonProgress();
+  const { data: bookmarks = [] } = useBookmarks();
+
+  const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Learner";
+  const streak = stats?.current_streak ?? 0;
+  const xp = stats?.xp ?? 0;
+  const lessonsDone = progress.length;
+  const bookmarkCount = bookmarks.length;
+
+  const weekly = useMemo(() => {
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const today = new Date();
+    const buckets: { day: string; lessons: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      const count = progress.filter((p) => p.completed_at.slice(0, 10) === key).length;
+      buckets.push({ day: days[d.getDay()], lessons: count });
+    }
+    return buckets;
+  }, [progress]);
+
   return (
     <AppLayout>
       <div className="px-6 py-8 space-y-6 max-w-7xl mx-auto">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Welcome back, Learner</h1>
+            <h1 className="text-3xl font-bold">Welcome back, {displayName}</h1>
             <p className="text-muted-foreground text-sm mt-1">
-              "The expert in anything was once a beginner." Keep going.
+              {user
+                ? `You've earned ${xp} XP. Keep the streak alive!`
+                : "Sign in to track your progress, XP, and streak."}
             </p>
           </div>
-          <Button className="bg-gradient-to-r from-primary to-accent">
-            <Plus className="mr-2 h-4 w-4" /> Set a goal
+          <Button asChild className="bg-gradient-to-r from-primary to-accent">
+            <Link to="/courses"><BookOpen className="mr-2 h-4 w-4" /> Continue learning</Link>
           </Button>
         </div>
 
-        {/* KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { icon: Flame, label: "Streak", value: "7 days", color: "from-orange-500 to-red-500" },
-            { icon: BookOpen, label: "Lessons done", value: "48", color: "from-primary to-accent" },
-            { icon: Trophy, label: "Badges", value: "12", color: "from-yellow-500 to-amber-500" },
-            { icon: Clock, label: "Study time", value: "62h", color: "from-cyan-500 to-blue-500" },
+            { icon: Flame, label: "Current streak", value: `${streak} ${streak === 1 ? "day" : "days"}`, color: "from-orange-500 to-red-500" },
+            { icon: BookOpen, label: "Lessons done", value: String(lessonsDone), color: "from-primary to-accent" },
+            { icon: Trophy, label: "XP earned", value: String(xp), color: "from-yellow-500 to-amber-500" },
+            { icon: BookMarked, label: "Bookmarks", value: String(bookmarkCount), color: "from-cyan-500 to-blue-500" },
           ].map((k) => (
             <Card key={k.label} className="glass-card p-5">
               <div className={`h-9 w-9 rounded-lg bg-gradient-to-br ${k.color} flex items-center justify-center mb-3`}>
