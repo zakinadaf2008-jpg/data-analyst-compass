@@ -1,15 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppLayout } from "@/components/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, PlayCircle, CheckCircle2 } from "lucide-react";
+import { Search, PlayCircle, CheckCircle2, Bookmark, BookmarkCheck, Flame } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getCourseIcon } from "@/lib/course-icons";
+import { useAuth } from "@/hooks/use-auth";
+import {
+  useLessonProgress, useCompleteLesson, useBookmarks, useToggleBookmark,
+} from "@/hooks/use-progress";
 
 export const Route = createFileRoute("/courses")({
   head: () => ({
@@ -43,7 +49,18 @@ function CoursesPage() {
   const [q, setQ] = useState("");
   const [active, setActive] = useState<Course | null>(null);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
-  const [completed, setCompleted] = useState<Record<string, boolean>>({});
+
+  const { user } = useAuth();
+  const { data: progress = [] } = useLessonProgress();
+  const { data: bookmarks = [] } = useBookmarks();
+  const completeLesson = useCompleteLesson();
+  const toggleBookmark = useToggleBookmark();
+
+  const completedSet = useMemo(() => new Set(progress.map((p) => p.lesson_id)), [progress]);
+  const bookmarkedCourses = useMemo(
+    () => new Set(bookmarks.filter((b) => b.kind === "course").map((b) => b.target_id)),
+    [bookmarks],
+  );
 
   const { data: courses = [], isLoading } = useQuery({
     queryKey: ["courses-public"],
@@ -74,8 +91,33 @@ function CoursesPage() {
     setCurrentLesson(c.lessons[0] ?? null);
   };
 
-  const toggleComplete = (key: string) => {
-    setCompleted((prev) => ({ ...prev, [key]: !prev[key] }));
+  const handleComplete = async (courseId: string, lessonId: string) => {
+    if (!user) {
+      toast.error("Sign in to track progress");
+      return;
+    }
+    if (completedSet.has(lessonId)) return;
+    try {
+      const stats: any = await completeLesson.mutateAsync({ lessonId, courseId });
+      toast.success(
+        <span className="flex items-center gap-2">
+          <Flame className="h-4 w-4 text-orange-400" />
+          +10 XP · {stats?.current_streak ?? 1} day streak
+        </span> as any,
+      );
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to save");
+    }
+  };
+
+  const handleBookmark = async (courseId: string) => {
+    if (!user) {
+      toast.error("Sign in to bookmark");
+      return;
+    }
+    const on = !bookmarkedCourses.has(courseId);
+    await toggleBookmark.mutateAsync({ kind: "course", targetId: courseId, on });
+    toast.success(on ? "Bookmarked" : "Removed bookmark");
   };
 
   return (
@@ -117,29 +159,57 @@ function CoursesPage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((c) => {
               const Icon = getCourseIcon(c.icon);
+              const courseProgress = c.lessons.length
+                ? Math.round(
+                    (c.lessons.filter((l) => completedSet.has(l.id)).length / c.lessons.length) *
+                      100,
+                  )
+                : 0;
+              const isBookmarked = bookmarkedCourses.has(c.id);
               return (
                 <Card key={c.id} className="glass-card p-5 flex flex-col hover:scale-[1.02] transition-transform">
                   <div className="flex items-start justify-between mb-4">
                     <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                       <Icon className="h-5 w-5 text-primary-foreground" />
                     </div>
-                    <Badge variant="outline">{c.level}</Badge>
+                    <div className="flex items-center gap-1">
+                      <Badge variant="outline">{c.level}</Badge>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7"
+                        onClick={(e) => { e.stopPropagation(); handleBookmark(c.id); }}
+                        aria-label={isBookmarked ? "Remove bookmark" : "Bookmark"}
+                      >
+                        {isBookmarked
+                          ? <BookmarkCheck className="h-4 w-4 text-primary" />
+                          : <Bookmark className="h-4 w-4" />}
+                      </Button>
+                    </div>
                   </div>
                   <h3 className="font-semibold text-lg mb-1">{c.title}</h3>
                   <p className="text-xs text-muted-foreground mb-2">{c.duration} · {c.lessons.length} lessons</p>
                   <p className="text-sm text-muted-foreground/80 mb-3 line-clamp-2">{c.description}</p>
-                  <div className="flex flex-wrap gap-1.5 mb-4">
+                  <div className="flex flex-wrap gap-1.5 mb-3">
                     {c.tags.map((t) => (
                       <span key={t} className="text-[10px] px-2 py-0.5 rounded-full bg-muted/50 text-muted-foreground">{t}</span>
                     ))}
                   </div>
+                  {user && c.lessons.length > 0 && (
+                    <div className="mb-3">
+                      <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
+                        <span>Progress</span><span>{courseProgress}%</span>
+                      </div>
+                      <Progress value={courseProgress} className="h-1.5" />
+                    </div>
+                  )}
                   <Button
                     onClick={() => openCourse(c)}
                     disabled={c.lessons.length === 0}
                     className="mt-auto w-full bg-gradient-to-r from-primary to-accent"
                   >
                     <PlayCircle className="h-4 w-4" />
-                    {c.lessons.length === 0 ? "No lessons yet" : "Start Learning"}
+                    {c.lessons.length === 0 ? "No lessons yet" : courseProgress > 0 ? "Continue" : "Start Learning"}
                   </Button>
                 </Card>
               );
@@ -174,10 +244,11 @@ function CoursesPage() {
                     size="sm"
                     variant="outline"
                     className="mt-3 glass-card"
-                    onClick={() => toggleComplete(`${active.id}-${currentLesson.id}`)}
+                    disabled={completedSet.has(currentLesson.id) || completeLesson.isPending}
+                    onClick={() => handleComplete(active.id, currentLesson.id)}
                   >
                     <CheckCircle2 className="h-4 w-4" />
-                    {completed[`${active.id}-${currentLesson.id}`] ? "Completed" : "Mark complete"}
+                    {completedSet.has(currentLesson.id) ? "Completed" : "Mark complete (+10 XP)"}
                   </Button>
                 </div>
               </div>
@@ -188,16 +259,16 @@ function CoursesPage() {
                 </div>
                 <ul className="divide-y divide-border/40">
                   {active.lessons.map((l, i) => {
-                    const key = `${active.id}-${l.id}`;
                     const isActive = l.id === currentLesson.id;
+                    const isDone = completedSet.has(l.id);
                     return (
                       <li key={l.id}>
                         <button
                           onClick={() => setCurrentLesson(l)}
                           className={`w-full text-left p-3 flex gap-3 items-start hover:bg-muted/40 transition ${isActive ? "bg-primary/10" : ""}`}
                         >
-                          <div className={`h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-xs font-medium ${isActive ? "bg-gradient-to-br from-primary to-accent text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                            {completed[key] ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
+                          <div className={`h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-xs font-medium ${isActive ? "bg-gradient-to-br from-primary to-accent text-primary-foreground" : isDone ? "bg-emerald-500/20 text-emerald-300" : "bg-muted text-muted-foreground"}`}>
+                            {isDone ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
                           </div>
                           <div className="min-w-0">
                             <p className="text-sm font-medium truncate">{l.title}</p>
