@@ -3,9 +3,22 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Bell, User } from "lucide-react";
+import { Search, Bell, User, LogIn, LogOut, ShieldCheck, MessageSquare, LayoutDashboard } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/use-auth";
+import { useRole } from "@/hooks/use-role";
+import { useNavigate } from "@tanstack/react-router";
 
 export function AppLayout({ children }: { children: ReactNode }) {
+  const { user, signOut } = useAuth();
+  const { isAdmin } = useRole();
+  const navigate = useNavigate();
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -21,8 +34,69 @@ export function AppLayout({ children }: { children: ReactNode }) {
               />
             </div>
             <div className="ml-auto flex items-center gap-2">
-              <Button variant="ghost" size="icon"><Bell className="h-4 w-4" /></Button>
-              <Button variant="ghost" size="icon"><User className="h-4 w-4" /></Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="icon" aria-label="Notifications">
+                    <Bell className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-80 p-0">
+                  <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between">
+                    <p className="text-sm font-semibold">Notifications</p>
+                    <Badge variant="secondary" className="text-[10px]">0 new</Badge>
+                  </div>
+                  <div className="p-4 space-y-3 text-sm">
+                    <div className="rounded-md border border-border/50 p-3">
+                      <p className="font-medium">Welcome to Analyst Hub 👋</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Explore the roadmap, start a course, or ask the AI Tutor anything about data analysis.
+                      </p>
+                    </div>
+                    <p className="text-xs text-muted-foreground text-center">
+                      You're all caught up. New activity will appear here.
+                    </p>
+                  </div>
+                </PopoverContent>
+              </Popover>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" aria-label="Account">
+                    <User className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  {user ? (
+                    <>
+                      <DropdownMenuLabel className="truncate">{user.email}</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate({ to: "/dashboard" })}>
+                        <LayoutDashboard className="h-4 w-4" /> Dashboard
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate({ to: "/chat" })}>
+                        <MessageSquare className="h-4 w-4" /> AI Tutor
+                      </DropdownMenuItem>
+                      {isAdmin && (
+                        <DropdownMenuItem onClick={() => navigate({ to: "/admin" })}>
+                          <ShieldCheck className="h-4 w-4" /> Admin
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => signOut()}>
+                        <LogOut className="h-4 w-4" /> Sign out
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    <>
+                      <DropdownMenuLabel>Account</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate({ to: "/login" })}>
+                        <LogIn className="h-4 w-4" /> Sign in
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </header>
           <main className="flex-1 min-w-0">{children}</main>
