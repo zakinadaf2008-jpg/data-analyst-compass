@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Flame, Target, BookOpen, Trophy, TrendingUp, Clock, BookMarked,
+  Flame, Target, BookOpen, Trophy, TrendingUp, BookMarked,
 } from "lucide-react";
 import {
   AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip,
