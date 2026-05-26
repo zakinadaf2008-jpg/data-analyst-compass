@@ -170,29 +170,40 @@ function DashboardPage() {
           <Card className="glass-card p-5">
             <h2 className="font-semibold mb-4">Recently completed</h2>
             <div className="space-y-3">
-              {completed.map((c) => (
-                <div key={c.title} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                  <div>
-                    <div className="text-sm font-medium">{c.title}</div>
-                    <div className="text-xs text-muted-foreground">{c.time}</div>
+              {progress.length === 0 && (
+                <p className="text-sm text-muted-foreground">No lessons completed yet. <Link to="/courses" className="text-primary hover:underline">Start a course →</Link></p>
+              )}
+              {progress
+                .slice()
+                .sort((a, b) => b.completed_at.localeCompare(a.completed_at))
+                .slice(0, 5)
+                .map((p) => (
+                  <div key={p.lesson_id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                    <div>
+                      <div className="text-sm font-medium">Lesson completed</div>
+                      <div className="text-xs text-muted-foreground">{new Date(p.completed_at).toLocaleString()}</div>
+                    </div>
+                    <Badge variant="outline" className="text-emerald-300 border-emerald-500/30 bg-emerald-500/10">+10 XP</Badge>
                   </div>
-                  <Badge variant="outline">{c.stage}</Badge>
-                </div>
-              ))}
+                ))}
             </div>
           </Card>
           <Card className="glass-card p-5">
-            <h2 className="font-semibold mb-4">Recommended next</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> Bookmarks</h2>
+              <Badge variant="outline">{bookmarkCount}</Badge>
+            </div>
             <div className="space-y-3">
-              {recommended.map((r) => (
-                <div key={r.title} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 cursor-pointer">
-                  <div>
-                    <div className="text-sm font-medium">{r.title}</div>
-                    <div className="text-xs text-muted-foreground">{r.duration} · {r.stage}</div>
+              {bookmarks.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No bookmarks yet. Save courses from the <Link to="/courses" className="text-primary hover:underline">catalog</Link>.</p>
+              ) : (
+                bookmarks.slice(0, 5).map((b) => (
+                  <div key={b.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                    <div className="text-sm font-medium capitalize">{b.kind}</div>
+                    <Badge variant="outline">{new Date(b.created_at).toLocaleDateString()}</Badge>
                   </div>
-                  <Button size="sm" variant="ghost">Start</Button>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </Card>
         </div>
