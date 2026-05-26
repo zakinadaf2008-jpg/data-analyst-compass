@@ -128,14 +128,22 @@ function DashboardPage() {
               <Target className="h-4 w-4 text-primary" />
               <h2 className="font-semibold">Today's goal</h2>
             </div>
-            <div className="text-3xl font-bold gradient-text mb-2">2 / 3</div>
-            <p className="text-xs text-muted-foreground mb-4">Lessons completed</p>
-            <Progress value={66} className="mb-6" />
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-emerald-500" /> SQL Joins</div>
-              <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-emerald-500" /> Pandas basics</div>
-              <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-muted" /> Hypothesis testing</div>
-            </div>
+            {(() => {
+              const todayKey = new Date().toISOString().slice(0, 10);
+              const doneToday = progress.filter((p) => p.completed_at.slice(0, 10) === todayKey).length;
+              const goal = 3;
+              const pct = Math.min(100, Math.round((doneToday / goal) * 100));
+              return (
+                <>
+                  <div className="text-3xl font-bold gradient-text mb-2">{doneToday} / {goal}</div>
+                  <p className="text-xs text-muted-foreground mb-4">Lessons completed today</p>
+                  <Progress value={pct} className="mb-2" />
+                  <p className="text-xs text-muted-foreground">
+                    {doneToday >= goal ? "🎉 Goal reached!" : `${goal - doneToday} more to hit today's goal`}
+                  </p>
+                </>
+              );
+            })()}
           </Card>
         </div>
 
