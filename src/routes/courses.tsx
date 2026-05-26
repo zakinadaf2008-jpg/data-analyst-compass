@@ -244,10 +244,11 @@ function CoursesPage() {
                     size="sm"
                     variant="outline"
                     className="mt-3 glass-card"
-                    onClick={() => toggleComplete(`${active.id}-${currentLesson.id}`)}
+                    disabled={completedSet.has(currentLesson.id) || completeLesson.isPending}
+                    onClick={() => handleComplete(active.id, currentLesson.id)}
                   >
                     <CheckCircle2 className="h-4 w-4" />
-                    {completed[`${active.id}-${currentLesson.id}`] ? "Completed" : "Mark complete"}
+                    {completedSet.has(currentLesson.id) ? "Completed" : "Mark complete (+10 XP)"}
                   </Button>
                 </div>
               </div>
