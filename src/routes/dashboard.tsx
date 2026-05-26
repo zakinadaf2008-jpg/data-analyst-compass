@@ -110,11 +110,11 @@ function DashboardPage() {
           <Card className="glass-card p-5 lg:col-span-2">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="font-semibold">Weekly study hours</h2>
-                <p className="text-xs text-muted-foreground">Last 7 days</p>
+                <h2 className="font-semibold">Weekly activity</h2>
+                <p className="text-xs text-muted-foreground">Lessons completed · last 7 days</p>
               </div>
               <Badge variant="outline" className="text-emerald-300 border-emerald-500/30 bg-emerald-500/10">
-                <TrendingUp className="h-3 w-3 mr-1" /> +18%
+                <TrendingUp className="h-3 w-3 mr-1" /> {weekly.reduce((s, d) => s + d.lessons, 0)} total
               </Badge>
             </div>
             <div className="h-56">
@@ -128,9 +128,9 @@ function DashboardPage() {
                   </defs>
                   <CartesianGrid stroke="oklch(1 0 0 / 0.05)" />
                   <XAxis dataKey="day" stroke="oklch(0.7 0.03 260)" fontSize={12} />
-                  <YAxis stroke="oklch(0.7 0.03 260)" fontSize={12} />
+                  <YAxis stroke="oklch(0.7 0.03 260)" fontSize={12} allowDecimals={false} />
                   <Tooltip contentStyle={{ background: "oklch(0.18 0.035 270)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 8 }} />
-                  <Area type="monotone" dataKey="hrs" stroke="oklch(0.65 0.21 275)" fill="url(#g1)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="lessons" stroke="oklch(0.65 0.21 275)" fill="url(#g1)" strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
