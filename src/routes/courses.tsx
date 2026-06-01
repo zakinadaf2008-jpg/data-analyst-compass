@@ -251,6 +251,9 @@ function CoursesPage() {
                     <CheckCircle2 className="h-4 w-4" />
                     {completedSet.has(currentLesson.id) ? "Completed" : "Mark complete (+10 XP)"}
                   </Button>
+                  {user && (
+                    <LessonNotes lessonId={currentLesson.id} courseId={active.id} />
+                  )}
                 </div>
               </div>
               <div className="border-l border-border/50 bg-muted/20 overflow-y-auto">
