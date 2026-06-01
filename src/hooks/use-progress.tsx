@@ -56,6 +56,7 @@ export function useCompleteLesson() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["lesson-progress", user?.id] });
       qc.invalidateQueries({ queryKey: ["user-stats", user?.id] });
+      qc.invalidateQueries({ queryKey: ["certificates", user?.id] });
     },
   });
 }
@@ -105,5 +106,123 @@ export function useToggleBookmark() {
       }
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["bookmarks", user?.id] }),
+  });
+}
+
+// ---------- Notes ----------
+export type Note = {
+  id: string;
+  lesson_id: string;
+  course_id: string;
+  content: string;
+  updated_at: string;
+};
+
+export function useLessonNote(lessonId: string | null) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["note", user?.id, lessonId],
+    enabled: !!user && !!lessonId,
+    queryFn: async (): Promise<Note | null> => {
+      const { data } = await (supabase as any)
+        .from("notes")
+        .select("id, lesson_id, course_id, content, updated_at")
+        .eq("user_id", user!.id)
+        .eq("lesson_id", lessonId!)
+        .maybeSingle();
+      return data;
+    },
+  });
+}
+
+export function useAllNotes() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["notes", user?.id],
+    enabled: !!user,
+    queryFn: async (): Promise<Note[]> => {
+      const { data } = await (supabase as any)
+        .from("notes")
+        .select("id, lesson_id, course_id, content, updated_at")
+        .eq("user_id", user!.id)
+        .order("updated_at", { ascending: false });
+      return (data ?? []) as Note[];
+    },
+  });
+}
+
+export function useSaveNote() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async ({ lessonId, courseId, content }: { lessonId: string; courseId: string; content: string }) => {
+      if (!user) throw new Error("Sign in required");
+      const { data: existing } = await (supabase as any)
+        .from("notes")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("lesson_id", lessonId)
+        .maybeSingle();
+      if (existing) {
+        const { error } = await (supabase as any)
+          .from("notes")
+          .update({ content })
+          .eq("id", existing.id);
+        if (error) throw new Error(error.message);
+      } else {
+        const { error } = await (supabase as any)
+          .from("notes")
+          .insert({ user_id: user.id, lesson_id: lessonId, course_id: courseId, content });
+        if (error) throw new Error(error.message);
+      }
+    },
+    onSuccess: (_d, v) => {
+      qc.invalidateQueries({ queryKey: ["note", user?.id, v.lessonId] });
+      qc.invalidateQueries({ queryKey: ["notes", user?.id] });
+    },
+  });
+}
+
+// ---------- Certificates ----------
+export type Certificate = {
+  id: string;
+  course_id: string;
+  issued_at: string;
+};
+
+export function useCertificates() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["certificates", user?.id],
+    enabled: !!user,
+    queryFn: async (): Promise<Certificate[]> => {
+      const { data } = await (supabase as any)
+        .from("certificates")
+        .select("id, course_id, issued_at")
+        .eq("user_id", user!.id)
+        .order("issued_at", { ascending: false });
+      return (data ?? []) as Certificate[];
+    },
+  });
+}
+
+// ---------- Leaderboard ----------
+export type LeaderboardEntry = {
+  user_id: string;
+  display_name: string;
+  avatar_url: string | null;
+  xp: number;
+  current_streak: number;
+  longest_streak: number;
+};
+
+export function useLeaderboard(limit = 20) {
+  return useQuery({
+    queryKey: ["leaderboard", limit],
+    queryFn: async (): Promise<LeaderboardEntry[]> => {
+      const { data, error } = await (supabase as any).rpc("get_leaderboard", { _limit: limit });
+      if (error) throw new Error(error.message);
+      return (data ?? []) as LeaderboardEntry[];
+    },
   });
 }

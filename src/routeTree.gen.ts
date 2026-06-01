@@ -14,6 +14,7 @@ import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as ChatRouteImport } from './routes/chat'
@@ -47,6 +48,11 @@ const ProjectsRoute = ProjectsRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/chat': typeof ChatRouteWithChildren
   '/courses': typeof CoursesRoute
   '/dashboard': typeof DashboardRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/projects': typeof ProjectsRoute
   '/resources': typeof ResourcesRoute
@@ -117,6 +124,7 @@ export interface FileRoutesByTo {
   '/career': typeof CareerRoute
   '/courses': typeof CoursesRoute
   '/dashboard': typeof DashboardRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/projects': typeof ProjectsRoute
   '/resources': typeof ResourcesRoute
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/chat': typeof ChatRouteWithChildren
   '/courses': typeof CoursesRoute
   '/dashboard': typeof DashboardRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/projects': typeof ProjectsRoute
   '/resources': typeof ResourcesRoute
@@ -152,6 +161,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/courses'
     | '/dashboard'
+    | '/leaderboard'
     | '/login'
     | '/projects'
     | '/resources'
@@ -167,6 +177,7 @@ export interface FileRouteTypes {
     | '/career'
     | '/courses'
     | '/dashboard'
+    | '/leaderboard'
     | '/login'
     | '/projects'
     | '/resources'
@@ -183,6 +194,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/courses'
     | '/dashboard'
+    | '/leaderboard'
     | '/login'
     | '/projects'
     | '/resources'
@@ -200,6 +212,7 @@ export interface RootRouteChildren {
   ChatRoute: typeof ChatRouteWithChildren
   CoursesRoute: typeof CoursesRoute
   DashboardRoute: typeof DashboardRoute
+  LeaderboardRoute: typeof LeaderboardRoute
   LoginRoute: typeof LoginRoute
   ProjectsRoute: typeof ProjectsRoute
   ResourcesRoute: typeof ResourcesRoute
@@ -243,6 +256,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -330,6 +350,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChatRoute: ChatRouteWithChildren,
   CoursesRoute: CoursesRoute,
   DashboardRoute: DashboardRoute,
+  LeaderboardRoute: LeaderboardRoute,
   LoginRoute: LoginRoute,
   ProjectsRoute: ProjectsRoute,
   ResourcesRoute: ResourcesRoute,
@@ -340,3 +361,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
