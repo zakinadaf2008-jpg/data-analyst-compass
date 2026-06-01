@@ -166,15 +166,50 @@ function DashboardPage() {
             </div>
           </Card>
 
-          {/* Notes */}
+          {/* Certificates */}
           <Card className="glass-card p-5">
-            <h2 className="font-semibold mb-3">Quick notes</h2>
-            <textarea
-              defaultValue="Review window functions tomorrow. Try LEAD/LAG on sales dataset."
-              className="w-full h-40 bg-muted/40 rounded-lg p-3 text-sm border border-border/40 resize-none focus:outline-none focus:ring-1 focus:ring-primary"
-            />
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-semibold flex items-center gap-2">
+                <Award className="h-4 w-4 text-yellow-400" /> Certificates
+              </h2>
+              <Badge variant="outline">{certificates.length}</Badge>
+            </div>
+            {certificates.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Finish every lesson in a course to earn your first certificate.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {certificates.slice(0, 4).map((c) => (
+                  <div key={c.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-gradient-to-r from-yellow-500/10 to-amber-500/5 border border-yellow-500/20">
+                    <Award className="h-4 w-4 text-yellow-400 shrink-0" />
+                    <div className="flex-1 min-w-0 text-sm">
+                      <p className="font-medium">Course completed</p>
+                      <p className="text-[11px] text-muted-foreground">{new Date(c.issued_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </Card>
         </div>
+
+        {/* Recent notes */}
+        {notes.length > 0 && (
+          <Card className="glass-card p-5">
+            <h2 className="font-semibold mb-3 flex items-center gap-2">
+              <NotebookPen className="h-4 w-4 text-primary" /> Recent notes
+            </h2>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {notes.slice(0, 4).map((n) => (
+                <div key={n.id} className="p-3 rounded-lg bg-muted/30 border border-border/40">
+                  <p className="text-sm line-clamp-3 whitespace-pre-wrap">{n.content || <span className="text-muted-foreground italic">Empty note</span>}</p>
+                  <p className="text-[11px] text-muted-foreground mt-2">{new Date(n.updated_at).toLocaleString()}</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
 
         <div className="grid lg:grid-cols-2 gap-4">
           <Card className="glass-card p-5">
