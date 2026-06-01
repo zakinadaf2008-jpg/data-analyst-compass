@@ -8,13 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, PlayCircle, CheckCircle2, Bookmark, BookmarkCheck, Flame } from "lucide-react";
+import { Search, PlayCircle, CheckCircle2, Bookmark, BookmarkCheck, Flame, NotebookPen, Save } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getCourseIcon } from "@/lib/course-icons";
 import { useAuth } from "@/hooks/use-auth";
 import {
   useLessonProgress, useCompleteLesson, useBookmarks, useToggleBookmark,
+  useLessonNote, useSaveNote,
 } from "@/hooks/use-progress";
 
 export const Route = createFileRoute("/courses")({
@@ -250,6 +251,9 @@ function CoursesPage() {
                     <CheckCircle2 className="h-4 w-4" />
                     {completedSet.has(currentLesson.id) ? "Completed" : "Mark complete (+10 XP)"}
                   </Button>
+                  {user && (
+                    <LessonNotes lessonId={currentLesson.id} courseId={active.id} />
+                  )}
                 </div>
               </div>
               <div className="border-l border-border/50 bg-muted/20 overflow-y-auto">
@@ -285,5 +289,53 @@ function CoursesPage() {
         </DialogContent>
       </Dialog>
     </AppLayout>
+  );
+}
+
+function LessonNotes({ lessonId, courseId }: { lessonId: string; courseId: string }) {
+  const { data: note } = useLessonNote(lessonId);
+  const saveNote = useSaveNote();
+  const [draft, setDraft] = useState("");
+  const [hydrated, setHydrated] = useState<string | null>(null);
+
+  if (hydrated !== lessonId) {
+    setHydrated(lessonId);
+    setDraft(note?.content ?? "");
+  }
+
+  const dirty = draft !== (note?.content ?? "");
+
+  const save = async () => {
+    try {
+      await saveNote.mutateAsync({ lessonId, courseId, content: draft });
+      toast.success("Note saved");
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to save note");
+    }
+  };
+
+  return (
+    <div className="mt-4">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
+          <NotebookPen className="h-3.5 w-3.5" /> My notes
+        </p>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-7 text-xs"
+          disabled={!dirty || saveNote.isPending}
+          onClick={save}
+        >
+          <Save className="h-3 w-3" /> Save
+        </Button>
+      </div>
+      <textarea
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        placeholder="Jot down key takeaways, timestamps, or questions for this lesson…"
+        className="w-full h-28 bg-muted/40 rounded-lg p-3 text-sm border border-border/40 resize-none focus:outline-none focus:ring-1 focus:ring-primary"
+      />
+    </div>
   );
 }
