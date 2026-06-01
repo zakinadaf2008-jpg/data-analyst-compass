@@ -8,13 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, PlayCircle, CheckCircle2, Bookmark, BookmarkCheck, Flame } from "lucide-react";
+import { Search, PlayCircle, CheckCircle2, Bookmark, BookmarkCheck, Flame, NotebookPen, Save } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getCourseIcon } from "@/lib/course-icons";
 import { useAuth } from "@/hooks/use-auth";
 import {
   useLessonProgress, useCompleteLesson, useBookmarks, useToggleBookmark,
+  useLessonNote, useSaveNote,
 } from "@/hooks/use-progress";
 
 export const Route = createFileRoute("/courses")({
