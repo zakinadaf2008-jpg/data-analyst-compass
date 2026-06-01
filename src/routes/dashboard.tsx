@@ -36,6 +36,8 @@ function DashboardPage() {
   const { data: stats } = useUserStats();
   const { data: progress = [] } = useLessonProgress();
   const { data: bookmarks = [] } = useBookmarks();
+  const { data: certificates = [] } = useCertificates();
+  const { data: notes = [] } = useAllNotes();
 
   const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Learner";
   const streak = stats?.current_streak ?? 0;
