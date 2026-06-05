@@ -205,12 +205,20 @@ function CoursesPage() {
                     </div>
                   )}
                   <Button
-                    onClick={() => openCourse(c)}
+                    asChild={c.lessons.length > 0}
                     disabled={c.lessons.length === 0}
                     className="mt-auto w-full bg-gradient-to-r from-primary to-accent"
                   >
-                    <PlayCircle className="h-4 w-4" />
-                    {c.lessons.length === 0 ? "No lessons yet" : courseProgress > 0 ? "Continue" : "Start Learning"}
+                    {c.lessons.length === 0 ? (
+                      <span className="inline-flex items-center gap-2">
+                        <PlayCircle className="h-4 w-4" /> No lessons yet
+                      </span>
+                    ) : (
+                      <a href={`/courses/${c.slug}`}>
+                        <PlayCircle className="h-4 w-4" />
+                        {courseProgress > 0 ? "Continue" : "Start Learning"}
+                      </a>
+                    )}
                   </Button>
                 </Card>
               );

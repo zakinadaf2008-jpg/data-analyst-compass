@@ -43,13 +43,21 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <div className="flex-1 flex flex-col min-w-0">
           <header className="sticky top-0 z-40 h-14 flex items-center gap-3 border-b border-border/50 px-4 backdrop-blur-xl bg-background/60">
             <SidebarTrigger />
-            <div className="relative flex-1 max-w-md">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const q = (e.currentTarget.elements.namedItem("q") as HTMLInputElement)?.value.trim();
+                if (q) navigate({ to: "/search", search: { q } });
+              }}
+              className="relative flex-1 max-w-md"
+            >
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search lessons, topics, projects..."
+                name="q"
+                placeholder="Search lessons, topics, courses…"
                 className="pl-9 bg-muted/40 border-border/50"
               />
-            </div>
+            </form>
             <div className="ml-auto flex items-center gap-2">
               <Popover>
                 <PopoverTrigger asChild>
