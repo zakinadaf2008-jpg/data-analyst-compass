@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppLayout } from "@/components/AppLayout";
@@ -204,14 +204,18 @@ function CoursesPage() {
                       <Progress value={courseProgress} className="h-1.5" />
                     </div>
                   )}
-                  <Button
-                    onClick={() => openCourse(c)}
-                    disabled={c.lessons.length === 0}
-                    className="mt-auto w-full bg-gradient-to-r from-primary to-accent"
-                  >
-                    <PlayCircle className="h-4 w-4" />
-                    {c.lessons.length === 0 ? "No lessons yet" : courseProgress > 0 ? "Continue" : "Start Learning"}
-                  </Button>
+                  {c.lessons.length === 0 ? (
+                    <Button disabled className="mt-auto w-full bg-gradient-to-r from-primary to-accent">
+                      <PlayCircle className="h-4 w-4" /> No lessons yet
+                    </Button>
+                  ) : (
+                    <Button asChild className="mt-auto w-full bg-gradient-to-r from-primary to-accent">
+                      <Link to="/courses/$slug" params={{ slug: c.slug }}>
+                        <PlayCircle className="h-4 w-4" />
+                        {courseProgress > 0 ? "Continue" : "Start Learning"}
+                      </Link>
+                    </Button>
+                  )}
                 </Card>
               );
             })}

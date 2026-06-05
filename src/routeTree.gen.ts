@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SearchRouteImport } from './routes/search'
 import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -24,12 +25,18 @@ import { Route as CareerRouteImport } from './routes/career'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChatIndexRouteImport } from './routes/chat.index'
+import { Route as CoursesSlugRouteImport } from './routes/courses.$slug'
 import { Route as ChatThreadIdRouteImport } from './routes/chat.$threadId'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RoadmapRoute = RoadmapRouteImport.update({
@@ -102,6 +109,11 @@ const ChatIndexRoute = ChatIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ChatRoute,
 } as any)
+const CoursesSlugRoute = CoursesSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => CoursesRoute,
+} as any)
 const ChatThreadIdRoute = ChatThreadIdRouteImport.update({
   id: '/$threadId',
   path: '/$threadId',
@@ -118,7 +130,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/career': typeof CareerRoute
   '/chat': typeof ChatRouteWithChildren
-  '/courses': typeof CoursesRoute
+  '/courses': typeof CoursesRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
@@ -127,16 +139,18 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
   '/roadmap': typeof RoadmapRoute
+  '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
+  '/courses/$slug': typeof CoursesSlugRoute
   '/chat/': typeof ChatIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/career': typeof CareerRoute
-  '/courses': typeof CoursesRoute
+  '/courses': typeof CoursesRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
@@ -145,9 +159,11 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
   '/roadmap': typeof RoadmapRoute
+  '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
+  '/courses/$slug': typeof CoursesSlugRoute
   '/chat': typeof ChatIndexRoute
 }
 export interface FileRoutesById {
@@ -156,7 +172,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/career': typeof CareerRoute
   '/chat': typeof ChatRouteWithChildren
-  '/courses': typeof CoursesRoute
+  '/courses': typeof CoursesRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
@@ -165,9 +181,11 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/resources': typeof ResourcesRoute
   '/roadmap': typeof RoadmapRoute
+  '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
+  '/courses/$slug': typeof CoursesSlugRoute
   '/chat/': typeof ChatIndexRoute
 }
 export interface FileRouteTypes {
@@ -186,9 +204,11 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/resources'
     | '/roadmap'
+    | '/search'
     | '/sitemap.xml'
     | '/api/chat'
     | '/chat/$threadId'
+    | '/courses/$slug'
     | '/chat/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -204,9 +224,11 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/resources'
     | '/roadmap'
+    | '/search'
     | '/sitemap.xml'
     | '/api/chat'
     | '/chat/$threadId'
+    | '/courses/$slug'
     | '/chat'
   id:
     | '__root__'
@@ -223,9 +245,11 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/resources'
     | '/roadmap'
+    | '/search'
     | '/sitemap.xml'
     | '/api/chat'
     | '/chat/$threadId'
+    | '/courses/$slug'
     | '/chat/'
   fileRoutesById: FileRoutesById
 }
@@ -234,7 +258,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   CareerRoute: typeof CareerRoute
   ChatRoute: typeof ChatRouteWithChildren
-  CoursesRoute: typeof CoursesRoute
+  CoursesRoute: typeof CoursesRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   LeaderboardRoute: typeof LeaderboardRoute
   LoginRoute: typeof LoginRoute
@@ -243,6 +267,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   ResourcesRoute: typeof ResourcesRoute
   RoadmapRoute: typeof RoadmapRoute
+  SearchRoute: typeof SearchRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiChatRoute: typeof ApiChatRoute
 }
@@ -254,6 +279,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/roadmap': {
@@ -354,6 +386,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatIndexRouteImport
       parentRoute: typeof ChatRoute
     }
+    '/courses/$slug': {
+      id: '/courses/$slug'
+      path: '/$slug'
+      fullPath: '/courses/$slug'
+      preLoaderRoute: typeof CoursesSlugRouteImport
+      parentRoute: typeof CoursesRoute
+    }
     '/chat/$threadId': {
       id: '/chat/$threadId'
       path: '/$threadId'
@@ -383,12 +422,23 @@ const ChatRouteChildren: ChatRouteChildren = {
 
 const ChatRouteWithChildren = ChatRoute._addFileChildren(ChatRouteChildren)
 
+interface CoursesRouteChildren {
+  CoursesSlugRoute: typeof CoursesSlugRoute
+}
+
+const CoursesRouteChildren: CoursesRouteChildren = {
+  CoursesSlugRoute: CoursesSlugRoute,
+}
+
+const CoursesRouteWithChildren =
+  CoursesRoute._addFileChildren(CoursesRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   CareerRoute: CareerRoute,
   ChatRoute: ChatRouteWithChildren,
-  CoursesRoute: CoursesRoute,
+  CoursesRoute: CoursesRouteWithChildren,
   DashboardRoute: DashboardRoute,
   LeaderboardRoute: LeaderboardRoute,
   LoginRoute: LoginRoute,
@@ -397,6 +447,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   ResourcesRoute: ResourcesRoute,
   RoadmapRoute: RoadmapRoute,
+  SearchRoute: SearchRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiChatRoute: ApiChatRoute,
 }
