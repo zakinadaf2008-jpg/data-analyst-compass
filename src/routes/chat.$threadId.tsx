@@ -101,9 +101,27 @@ function ChatThread() {
     <div className="flex flex-col h-full min-h-0">
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-6">
         {messages.length === 0 && (
-          <p className="text-center text-muted-foreground text-sm mt-12">
-            Ask anything about data analysis — SQL, Python, Excel, stats, ML, careers.
-          </p>
+          <div className="max-w-2xl mx-auto mt-12 text-center space-y-6">
+            <p className="text-muted-foreground text-sm">
+              Ask anything about data analysis — SQL, Python, Excel, stats, ML, careers.
+            </p>
+            <div className="grid sm:grid-cols-2 gap-2">
+              {[
+                "Explain SQL window functions with an example",
+                "Pandas: how do I merge two DataFrames?",
+                "What's the difference between INNER and LEFT JOIN?",
+                "Give me a 30-day plan to land a junior analyst role",
+              ].map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setInput(s)}
+                  className="text-left text-sm rounded-lg border border-border/50 bg-muted/20 hover:bg-muted/40 px-3 py-2 transition"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
         {messages.map((m) => (
           <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
