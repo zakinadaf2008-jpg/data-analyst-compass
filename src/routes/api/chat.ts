@@ -9,7 +9,7 @@ const Body = z.object({
   message: z.string().min(1).max(8000),
 });
 
-const SYSTEM = `You are the Data Analyst Compass AI tutor. Help learners understand data analysis: SQL, Python (pandas, numpy), Excel, statistics, visualization (Tableau/Power BI), machine learning basics, and career advice. Be concise, friendly, and use markdown with code blocks when helpful.`;
+const BASE_SYSTEM = `You are the Data Analyst Compass AI tutor. Help learners understand data analysis: SQL, Python (pandas, numpy), Excel, statistics, visualization (Tableau/Power BI), machine learning basics, and career advice. Be concise, friendly, and use markdown with code blocks when helpful. When the learner asks for practice, give realistic, runnable examples. When relevant, encourage them based on their current streak and XP.`;
 
 export const Route = createFileRoute("/api/chat")({
   server: {
@@ -56,10 +56,17 @@ export const Route = createFileRoute("/api/chat")({
           .eq("thread_id", threadId)
           .order("created_at", { ascending: true });
 
+        // Fetch learner context for personalization
+        const [{ data: stats }, { data: prof }] = await Promise.all([
+          supabase.from("user_stats").select("xp,current_streak,longest_streak").eq("user_id", userId).maybeSingle(),
+          supabase.from("profiles").select("display_name").eq("id", userId).maybeSingle(),
+        ]);
+        const learnerContext = `\n\nLearner context: name=${prof?.display_name ?? "Learner"}, xp=${stats?.xp ?? 0}, current_streak=${stats?.current_streak ?? 0} day(s), longest_streak=${stats?.longest_streak ?? 0} day(s).`;
+
         const gateway = createLovableAiGatewayProvider(LOVABLE_API_KEY);
         const result = streamText({
           model: gateway("google/gemini-3-flash-preview"),
-          system: SYSTEM,
+          system: BASE_SYSTEM + learnerContext,
           messages: (history ?? []).map((m) => ({
             role: m.role as "user" | "assistant",
             content: m.content,
