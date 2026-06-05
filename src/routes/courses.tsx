@@ -204,11 +204,6 @@ function CoursesPage() {
                       <Progress value={courseProgress} className="h-1.5" />
                     </div>
                   )}
-                  <Button
-                    asChild={c.lessons.length > 0}
-                    disabled={c.lessons.length === 0}
-                    className="mt-auto w-full bg-gradient-to-r from-primary to-accent"
-                  >
                   {c.lessons.length === 0 ? (
                     <Button disabled className="mt-auto w-full bg-gradient-to-r from-primary to-accent">
                       <PlayCircle className="h-4 w-4" /> No lessons yet
