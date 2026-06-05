@@ -209,17 +209,18 @@ function CoursesPage() {
                     disabled={c.lessons.length === 0}
                     className="mt-auto w-full bg-gradient-to-r from-primary to-accent"
                   >
-                    {c.lessons.length === 0 ? (
-                      <span className="inline-flex items-center gap-2">
-                        <PlayCircle className="h-4 w-4" /> No lessons yet
-                      </span>
-                    ) : (
-                      <a href={`/courses/${c.slug}`}>
+                  {c.lessons.length === 0 ? (
+                    <Button disabled className="mt-auto w-full bg-gradient-to-r from-primary to-accent">
+                      <PlayCircle className="h-4 w-4" /> No lessons yet
+                    </Button>
+                  ) : (
+                    <Button asChild className="mt-auto w-full bg-gradient-to-r from-primary to-accent">
+                      <Link to="/courses/$slug" params={{ slug: c.slug }}>
                         <PlayCircle className="h-4 w-4" />
                         {courseProgress > 0 ? "Continue" : "Start Learning"}
-                      </a>
-                    )}
-                  </Button>
+                      </Link>
+                    </Button>
+                  )}
                 </Card>
               );
             })}
