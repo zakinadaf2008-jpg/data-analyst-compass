@@ -18,6 +18,7 @@ import {
   useLessonProgress, useCompleteLesson, useBookmarks, useToggleBookmark,
   useLessonNote, useSaveNote,
 } from "@/hooks/use-progress";
+import { LessonDiscussion } from "@/components/LessonDiscussion";
 
 type Lesson = { id: string; title: string; duration: string; youtube_id: string; sort_order: number };
 type Course = {
@@ -214,6 +215,7 @@ function CourseDetailPage() {
                   {completedSet.has(currentLesson.id) ? "Completed" : "Mark complete (+10 XP)"}
                 </Button>
                 {user && <LessonNotes lessonId={currentLesson.id} courseId={course.id} />}
+                <LessonDiscussion lessonId={currentLesson.id} courseId={course.id} />
               </Card>
             </div>
             <Card className="glass-card p-0 overflow-hidden h-fit">
