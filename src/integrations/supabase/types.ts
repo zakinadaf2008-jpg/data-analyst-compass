@@ -324,6 +324,85 @@ export type Database = {
         }
         Relationships: []
       }
+      showcase_likes: {
+        Row: {
+          created_at: string
+          project_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          project_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          project_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "showcase_likes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "showcase_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      showcase_projects: {
+        Row: {
+          course_id: string | null
+          cover_image_url: string | null
+          created_at: string
+          description: string
+          id: string
+          project_url: string | null
+          published: boolean
+          repo_url: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          course_id?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          project_url?: string | null
+          published?: boolean
+          repo_url?: string | null
+          tags?: string[]
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          course_id?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          project_url?: string | null
+          published?: boolean
+          repo_url?: string | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "showcase_projects_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string

@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ShowcaseRouteImport } from './routes/showcase'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as ResourcesRouteImport } from './routes/resources'
@@ -32,6 +33,11 @@ import { Route as ApiChatRouteImport } from './routes/api/chat'
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShowcaseRoute = ShowcaseRouteImport.update({
+  id: '/showcase',
+  path: '/showcase',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SearchRoute = SearchRouteImport.update({
@@ -140,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/resources': typeof ResourcesRoute
   '/roadmap': typeof RoadmapRoute
   '/search': typeof SearchRoute
+  '/showcase': typeof ShowcaseRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
@@ -160,6 +167,7 @@ export interface FileRoutesByTo {
   '/resources': typeof ResourcesRoute
   '/roadmap': typeof RoadmapRoute
   '/search': typeof SearchRoute
+  '/showcase': typeof ShowcaseRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
@@ -182,6 +190,7 @@ export interface FileRoutesById {
   '/resources': typeof ResourcesRoute
   '/roadmap': typeof RoadmapRoute
   '/search': typeof SearchRoute
+  '/showcase': typeof ShowcaseRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/resources'
     | '/roadmap'
     | '/search'
+    | '/showcase'
     | '/sitemap.xml'
     | '/api/chat'
     | '/chat/$threadId'
@@ -225,6 +235,7 @@ export interface FileRouteTypes {
     | '/resources'
     | '/roadmap'
     | '/search'
+    | '/showcase'
     | '/sitemap.xml'
     | '/api/chat'
     | '/chat/$threadId'
@@ -246,6 +257,7 @@ export interface FileRouteTypes {
     | '/resources'
     | '/roadmap'
     | '/search'
+    | '/showcase'
     | '/sitemap.xml'
     | '/api/chat'
     | '/chat/$threadId'
@@ -268,6 +280,7 @@ export interface RootRouteChildren {
   ResourcesRoute: typeof ResourcesRoute
   RoadmapRoute: typeof RoadmapRoute
   SearchRoute: typeof SearchRoute
+  ShowcaseRoute: typeof ShowcaseRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiChatRoute: typeof ApiChatRoute
 }
@@ -279,6 +292,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/showcase': {
+      id: '/showcase'
+      path: '/showcase'
+      fullPath: '/showcase'
+      preLoaderRoute: typeof ShowcaseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/search': {
@@ -448,6 +468,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesRoute: ResourcesRoute,
   RoadmapRoute: RoadmapRoute,
   SearchRoute: SearchRoute,
+  ShowcaseRoute: ShowcaseRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiChatRoute: ApiChatRoute,
 }
