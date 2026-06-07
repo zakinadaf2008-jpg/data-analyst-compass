@@ -403,6 +403,45 @@ export type Database = {
           },
         ]
       }
+      study_tasks: {
+        Row: {
+          course_slug: string | null
+          created_at: string
+          detail: string | null
+          done: boolean
+          id: string
+          position: number
+          title: string
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          course_slug?: string | null
+          created_at?: string
+          detail?: string | null
+          done?: boolean
+          id?: string
+          position?: number
+          title: string
+          updated_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          course_slug?: string | null
+          created_at?: string
+          detail?: string | null
+          done?: boolean
+          id?: string
+          position?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
