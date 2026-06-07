@@ -1,6 +1,6 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
-  LayoutDashboard, Map, BookOpen, Library, FolderKanban, Briefcase, Home, Sparkles, MessageSquare, LogOut, LogIn, ShieldCheck, Trophy, Rocket, CalendarCheck,
+  LayoutDashboard, Map, BookOpen, Library, FolderKanban, Briefcase, Home, Sparkles, MessageSquare, LogOut, LogIn, ShieldCheck, Trophy, Rocket, CalendarCheck, Award,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -19,6 +19,7 @@ const navItems = [
   { title: "Study Plan", url: "/study-plan", icon: CalendarCheck },
   { title: "Leaderboard", url: "/leaderboard", icon: Trophy },
   { title: "Showcase", url: "/showcase", icon: Rocket },
+  { title: "Achievements", url: "/achievements", icon: Award },
   { title: "Resources", url: "/resources", icon: Library },
   { title: "Projects", url: "/projects", icon: FolderKanban },
   { title: "Career", url: "/career", icon: Briefcase },
