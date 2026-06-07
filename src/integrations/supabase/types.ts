@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          code: string
+          created_at: string
+          criteria_type: string
+          description: string
+          icon: string
+          id: string
+          threshold: number
+          title: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          criteria_type: string
+          description: string
+          icon?: string
+          id?: string
+          threshold?: number
+          title: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          criteria_type?: string
+          description?: string
+          icon?: string
+          id?: string
+          threshold?: number
+          title?: string
+        }
+        Relationships: []
+      }
       bookmarks: {
         Row: {
           created_at: string
@@ -441,6 +474,35 @@ export type Database = {
           week_start?: string
         }
         Relationships: []
+      }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
