@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StudyPlanRouteImport } from './routes/study-plan'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ShowcaseRouteImport } from './routes/showcase'
 import { Route as SearchRouteImport } from './routes/search'
@@ -30,6 +31,11 @@ import { Route as CoursesSlugRouteImport } from './routes/courses.$slug'
 import { Route as ChatThreadIdRouteImport } from './routes/chat.$threadId'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
+const StudyPlanRoute = StudyPlanRouteImport.update({
+  id: '/study-plan',
+  path: '/study-plan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -148,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/showcase': typeof ShowcaseRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/study-plan': typeof StudyPlanRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/courses/$slug': typeof CoursesSlugRoute
@@ -169,6 +176,7 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/showcase': typeof ShowcaseRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/study-plan': typeof StudyPlanRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/courses/$slug': typeof CoursesSlugRoute
@@ -192,6 +200,7 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/showcase': typeof ShowcaseRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/study-plan': typeof StudyPlanRoute
   '/api/chat': typeof ApiChatRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/courses/$slug': typeof CoursesSlugRoute
@@ -216,6 +225,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/showcase'
     | '/sitemap.xml'
+    | '/study-plan'
     | '/api/chat'
     | '/chat/$threadId'
     | '/courses/$slug'
@@ -237,6 +247,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/showcase'
     | '/sitemap.xml'
+    | '/study-plan'
     | '/api/chat'
     | '/chat/$threadId'
     | '/courses/$slug'
@@ -259,6 +270,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/showcase'
     | '/sitemap.xml'
+    | '/study-plan'
     | '/api/chat'
     | '/chat/$threadId'
     | '/courses/$slug'
@@ -282,11 +294,19 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   ShowcaseRoute: typeof ShowcaseRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  StudyPlanRoute: typeof StudyPlanRoute
   ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/study-plan': {
+      id: '/study-plan'
+      path: '/study-plan'
+      fullPath: '/study-plan'
+      preLoaderRoute: typeof StudyPlanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -470,8 +490,19 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   ShowcaseRoute: ShowcaseRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  StudyPlanRoute: StudyPlanRoute,
   ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
