@@ -18,6 +18,7 @@ import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as MentorsRouteImport } from './routes/mentors'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -75,6 +76,11 @@ const ProjectsRoute = ProjectsRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MentorsRoute = MentorsRouteImport.update({
+  id: '/mentors',
+  path: '/mentors',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -153,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
+  '/mentors': typeof MentorsRoute
   '/profile': typeof ProfileRoute
   '/projects': typeof ProjectsRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -176,6 +183,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
+  '/mentors': typeof MentorsRoute
   '/profile': typeof ProfileRoute
   '/projects': typeof ProjectsRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -201,6 +209,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
+  '/mentors': typeof MentorsRoute
   '/profile': typeof ProfileRoute
   '/projects': typeof ProjectsRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -227,6 +236,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/leaderboard'
     | '/login'
+    | '/mentors'
     | '/profile'
     | '/projects'
     | '/reset-password'
@@ -250,6 +260,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/leaderboard'
     | '/login'
+    | '/mentors'
     | '/profile'
     | '/projects'
     | '/reset-password'
@@ -274,6 +285,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/leaderboard'
     | '/login'
+    | '/mentors'
     | '/profile'
     | '/projects'
     | '/reset-password'
@@ -299,6 +311,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   LeaderboardRoute: typeof LeaderboardRoute
   LoginRoute: typeof LoginRoute
+  MentorsRoute: typeof MentorsRoute
   ProfileRoute: typeof ProfileRoute
   ProjectsRoute: typeof ProjectsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -374,6 +387,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mentors': {
+      id: '/mentors'
+      path: '/mentors'
+      fullPath: '/mentors'
+      preLoaderRoute: typeof MentorsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -503,6 +523,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   LeaderboardRoute: LeaderboardRoute,
   LoginRoute: LoginRoute,
+  MentorsRoute: MentorsRoute,
   ProfileRoute: ProfileRoute,
   ProjectsRoute: ProjectsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
