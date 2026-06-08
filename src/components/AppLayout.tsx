@@ -3,7 +3,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Bell, User, LogIn, LogOut, ShieldCheck, MessageSquare, LayoutDashboard, UserCog } from "lucide-react";
+import { Search, Bell, User, LogIn, LogOut, ShieldCheck, MessageSquare, LayoutDashboard, UserCog, CheckCheck } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator,
@@ -14,13 +14,38 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/use-auth";
 import { useRole } from "@/hooks/use-role";
 import { useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { listNotifications, markAllRead, markRead } from "@/lib/notifications.functions";
+import { formatDistanceToNow } from "date-fns";
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const { user, signOut } = useAuth();
   const { isAdmin } = useRole();
   const navigate = useNavigate();
+  const qc = useQueryClient();
+  const fetchNotifs = useServerFn(listNotifications);
+  const markAllFn = useServerFn(markAllRead);
+  const markOneFn = useServerFn(markRead);
+
+  const { data: notifs } = useQuery({
+    queryKey: ["notifications", user?.id],
+    enabled: !!user,
+    queryFn: () => fetchNotifs(),
+    refetchInterval: 60_000,
+  });
+  const unread = notifs?.unread ?? 0;
+  const items = notifs?.items ?? [];
+
+  const markAll = useMutation({
+    mutationFn: () => markAllFn(),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
+  });
+  const markOne = useMutation({
+    mutationFn: (id: string) => markOneFn({ data: { id } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
+  });
 
   const { data: profile } = useQuery({
     queryKey: ["profile", user?.id],
@@ -61,25 +86,60 @@ export function AppLayout({ children }: { children: ReactNode }) {
             <div className="ml-auto flex items-center gap-2">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" aria-label="Notifications">
+                  <Button variant="ghost" size="icon" aria-label="Notifications" className="relative">
                     <Bell className="h-4 w-4" />
+                    {unread > 0 && (
+                      <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary animate-pulse" />
+                    )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent align="end" className="w-80 p-0">
+                <PopoverContent align="end" className="w-96 p-0">
                   <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between">
-                    <p className="text-sm font-semibold">Notifications</p>
-                    <Badge variant="secondary" className="text-[10px]">0 new</Badge>
-                  </div>
-                  <div className="p-4 space-y-3 text-sm">
-                    <div className="rounded-md border border-border/50 p-3">
-                      <p className="font-medium">Welcome to Analyst Hub 👋</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Explore the roadmap, start a course, or ask the AI Tutor anything about data analysis.
-                      </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold">Notifications</p>
+                      <Badge variant="secondary" className="text-[10px]">{unread} new</Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground text-center">
-                      You're all caught up. New activity will appear here.
-                    </p>
+                    {unread > 0 && (
+                      <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => markAll.mutate()}>
+                        <CheckCheck className="h-3 w-3" /> Mark all read
+                      </Button>
+                    )}
+                  </div>
+                  <div className="max-h-96 overflow-y-auto">
+                    {!user ? (
+                      <p className="p-6 text-xs text-muted-foreground text-center">
+                        Sign in to see your notifications.
+                      </p>
+                    ) : items.length === 0 ? (
+                      <p className="p-6 text-xs text-muted-foreground text-center">
+                        You're all caught up. New activity will appear here.
+                      </p>
+                    ) : (
+                      <ul className="divide-y divide-border/50">
+                        {items.map((n: any) => (
+                          <li key={n.id}>
+                            <button
+                              onClick={() => {
+                                if (!n.read_at) markOne.mutate(n.id);
+                                if (n.link) navigate({ to: n.link });
+                              }}
+                              className={`w-full text-left px-4 py-3 hover:bg-muted/40 transition-colors ${!n.read_at ? "bg-muted/20" : ""}`}
+                            >
+                              <div className="flex items-start gap-2">
+                                {!n.read_at && <span className="mt-1.5 h-2 w-2 rounded-full bg-primary shrink-0" />}
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm font-medium truncate">{n.title}</p>
+                                  {n.body && <p className="text-xs text-muted-foreground truncate">{n.body}</p>}
+                                  <p className="text-[10px] text-muted-foreground mt-1">
+                                    {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                                  </p>
+                                </div>
+                              </div>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 </PopoverContent>
               </Popover>
