@@ -3,7 +3,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Bell, User, LogIn, LogOut, ShieldCheck, MessageSquare, LayoutDashboard, UserCog } from "lucide-react";
+import { Search, Bell, User, LogIn, LogOut, ShieldCheck, MessageSquare, LayoutDashboard, UserCog, CheckCheck } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator,
@@ -14,13 +14,38 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/use-auth";
 import { useRole } from "@/hooks/use-role";
 import { useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { listNotifications, markAllRead, markRead } from "@/lib/notifications.functions";
+import { formatDistanceToNow } from "date-fns";
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const { user, signOut } = useAuth();
   const { isAdmin } = useRole();
   const navigate = useNavigate();
+  const qc = useQueryClient();
+  const fetchNotifs = useServerFn(listNotifications);
+  const markAllFn = useServerFn(markAllRead);
+  const markOneFn = useServerFn(markRead);
+
+  const { data: notifs } = useQuery({
+    queryKey: ["notifications", user?.id],
+    enabled: !!user,
+    queryFn: () => fetchNotifs(),
+    refetchInterval: 60_000,
+  });
+  const unread = notifs?.unread ?? 0;
+  const items = notifs?.items ?? [];
+
+  const markAll = useMutation({
+    mutationFn: () => markAllFn(),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
+  });
+  const markOne = useMutation({
+    mutationFn: (id: string) => markOneFn({ data: { id } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
+  });
 
   const { data: profile } = useQuery({
     queryKey: ["profile", user?.id],
