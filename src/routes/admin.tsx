@@ -371,3 +371,90 @@ function AdminPage() {
     </AppLayout>
   );
 }
+
+function InsightsTab() {
+  const fn = useServerFn(getAdminStats);
+  const { data, isLoading } = useQuery({ queryKey: ["admin-stats"], queryFn: () => fn({}) });
+  if (isLoading || !data) return <p className="text-sm text-muted-foreground">Loading…</p>;
+  const labels: Record<string, string> = {
+    profiles: "Users", courses: "Courses", lessons: "Lessons",
+    lesson_progress: "Lessons completed", certificates: "Certificates issued",
+    showcase_projects: "Showcase projects", interview_sessions: "Interview sessions",
+    mentors: "Mentors", mentor_bookings: "1:1 bookings",
+    notifications: "Notifications sent", chat_threads: "AI chat threads",
+  };
+  return (
+    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      {Object.entries(data.counts).map(([k, v]) => (
+        <Card key={k} className="glass-card p-4">
+          <p className="text-xs text-muted-foreground">{labels[k] ?? k}</p>
+          <p className="text-3xl font-bold gradient-text mt-1">{v}</p>
+        </Card>
+      ))}
+      <Card className="glass-card p-4 sm:col-span-2 lg:col-span-4">
+        <p className="text-sm font-semibold mb-3">Top learners by XP</p>
+        <div className="space-y-2">
+          {data.topXp.map((s: any, i: number) => (
+            <div key={s.user_id} className="flex items-center justify-between text-sm">
+              <span className="font-mono text-xs text-muted-foreground">#{i + 1} · {s.user_id.slice(0, 8)}</span>
+              <span className="font-semibold">{s.xp} XP · 🔥 {s.current_streak}</span>
+            </div>
+          ))}
+          {data.topXp.length === 0 && <p className="text-xs text-muted-foreground">No activity yet.</p>}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function UsersTab({ currentUserId }: { currentUserId: string }) {
+  const qc = useQueryClient();
+  const listFn = useServerFn(listUsers);
+  const setAdminFn = useServerFn(setUserAdmin);
+  const { data: users = [], isLoading } = useQuery({ queryKey: ["admin-users"], queryFn: () => listFn({}) });
+
+  const toggleAdmin = async (userId: string, currentlyAdmin: boolean) => {
+    try {
+      await setAdminFn({ data: { userId, makeAdmin: !currentlyAdmin } });
+      toast.success(currentlyAdmin ? "Admin removed" : "Admin granted");
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed");
+    }
+  };
+
+  if (isLoading) return <p className="text-sm text-muted-foreground">Loading…</p>;
+
+  return (
+    <Card className="glass-card overflow-hidden">
+      <div className="divide-y divide-border/40">
+        {users.map((u: any) => {
+          const isAdmin = u.roles.includes("admin");
+          const isSelf = u.id === currentUserId;
+          return (
+            <div key={u.id} className="flex items-center gap-3 p-3">
+              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground text-sm font-bold">
+                {(u.display_name ?? "?").slice(0, 1).toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">
+                  {u.display_name ?? "Learner"} {isSelf && <span className="text-xs text-muted-foreground">(you)</span>}
+                </p>
+                <p className="text-xs text-muted-foreground">{u.xp} XP · 🔥 {u.streak}</p>
+              </div>
+              {isAdmin && <Badge className="bg-gradient-to-r from-primary to-accent text-primary-foreground">Admin</Badge>}
+              <Button
+                size="sm" variant="outline" className="glass-card"
+                disabled={isSelf && isAdmin}
+                onClick={() => toggleAdmin(u.id, isAdmin)}
+              >
+                {isAdmin ? <><ShieldOff className="h-3.5 w-3.5" /> Revoke</> : <><Shield className="h-3.5 w-3.5" /> Make admin</>}
+              </Button>
+            </div>
+          );
+        })}
+        {users.length === 0 && <p className="text-sm text-muted-foreground text-center py-6">No users yet.</p>}
+      </div>
+    </Card>
+  );
+}
