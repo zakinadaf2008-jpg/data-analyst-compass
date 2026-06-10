@@ -15,14 +15,16 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { ShieldCheck, Plus, Pencil, Trash2, ListVideo, Lock } from "lucide-react";
+import { ShieldCheck, Plus, Pencil, Trash2, ListVideo, Lock, BarChart3, Users as UsersIcon, BookOpen, ShieldOff, Shield } from "lucide-react";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useRole } from "@/hooks/use-role";
 import {
   upsertCourse, deleteCourse, upsertLesson, deleteLesson,
 } from "@/lib/courses.functions";
+import { getAdminStats, listUsers, setUserAdmin } from "@/lib/admin.functions";
 import { COURSE_ICON_NAMES, getCourseIcon } from "@/lib/course-icons";
 
 export const Route = createFileRoute("/admin")({
