@@ -21,6 +21,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MentorsRouteImport } from './routes/mentors'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as InterviewRouteImport } from './routes/interview'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as ChatRouteImport } from './routes/chat'
@@ -93,6 +94,11 @@ const LeaderboardRoute = LeaderboardRouteImport.update({
   path: '/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InterviewRoute = InterviewRouteImport.update({
+  id: '/interview',
+  path: '/interview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/chat': typeof ChatRouteWithChildren
   '/courses': typeof CoursesRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/interview': typeof InterviewRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/mentors': typeof MentorsRoute
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/career': typeof CareerRoute
   '/courses': typeof CoursesRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/interview': typeof InterviewRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/mentors': typeof MentorsRoute
@@ -207,6 +215,7 @@ export interface FileRoutesById {
   '/chat': typeof ChatRouteWithChildren
   '/courses': typeof CoursesRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/interview': typeof InterviewRoute
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/mentors': typeof MentorsRoute
@@ -234,6 +243,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/courses'
     | '/dashboard'
+    | '/interview'
     | '/leaderboard'
     | '/login'
     | '/mentors'
@@ -258,6 +268,7 @@ export interface FileRouteTypes {
     | '/career'
     | '/courses'
     | '/dashboard'
+    | '/interview'
     | '/leaderboard'
     | '/login'
     | '/mentors'
@@ -283,6 +294,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/courses'
     | '/dashboard'
+    | '/interview'
     | '/leaderboard'
     | '/login'
     | '/mentors'
@@ -309,6 +321,7 @@ export interface RootRouteChildren {
   ChatRoute: typeof ChatRouteWithChildren
   CoursesRoute: typeof CoursesRouteWithChildren
   DashboardRoute: typeof DashboardRoute
+  InterviewRoute: typeof InterviewRoute
   LeaderboardRoute: typeof LeaderboardRoute
   LoginRoute: typeof LoginRoute
   MentorsRoute: typeof MentorsRoute
@@ -408,6 +421,13 @@ declare module '@tanstack/react-router' {
       path: '/leaderboard'
       fullPath: '/leaderboard'
       preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/interview': {
+      id: '/interview'
+      path: '/interview'
+      fullPath: '/interview'
+      preLoaderRoute: typeof InterviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -521,6 +541,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChatRoute: ChatRouteWithChildren,
   CoursesRoute: CoursesRouteWithChildren,
   DashboardRoute: DashboardRoute,
+  InterviewRoute: InterviewRoute,
   LeaderboardRoute: LeaderboardRoute,
   LoginRoute: LoginRoute,
   MentorsRoute: MentorsRoute,
@@ -538,3 +559,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
