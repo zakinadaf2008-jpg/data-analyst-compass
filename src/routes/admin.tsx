@@ -15,14 +15,16 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { ShieldCheck, Plus, Pencil, Trash2, ListVideo, Lock } from "lucide-react";
+import { ShieldCheck, Plus, Pencil, Trash2, ListVideo, Lock, BarChart3, Users as UsersIcon, BookOpen, ShieldOff, Shield } from "lucide-react";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useRole } from "@/hooks/use-role";
 import {
   upsertCourse, deleteCourse, upsertLesson, deleteLesson,
 } from "@/lib/courses.functions";
+import { getAdminStats, listUsers, setUserAdmin } from "@/lib/admin.functions";
 import { COURSE_ICON_NAMES, getCourseIcon } from "@/lib/course-icons";
 
 export const Route = createFileRoute("/admin")({
@@ -165,53 +167,68 @@ function AdminPage() {
   return (
     <AppLayout>
       <div className="px-6 py-8 max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <ShieldCheck className="h-6 w-6 text-primary" />
               <h1 className="text-3xl font-bold">Admin</h1>
               <Badge className="bg-gradient-to-r from-primary to-accent text-primary-foreground">Owner</Badge>
             </div>
-            <p className="text-muted-foreground text-sm">Manage the course catalog. Changes go live instantly.</p>
+            <p className="text-muted-foreground text-sm">Manage the catalog, users, and view platform insights.</p>
           </div>
-          <Button
-            onClick={() => setEditing({ level: "Beginner", icon: "BookOpen", tags: [], sort_order: courses.length + 1 })}
-            className="bg-gradient-to-r from-primary to-accent"
-          >
-            <Plus className="h-4 w-4" /> New course
-          </Button>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {courses.map((c) => {
-            const Icon = getCourseIcon(c.icon);
-            return (
-              <Card key={c.id} className="glass-card p-4 flex flex-col gap-3">
-                <div className="flex items-start gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                    <Icon className="h-5 w-5 text-primary-foreground" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold truncate">{c.title}</p>
-                    <p className="text-xs text-muted-foreground">{c.level} · {c.duration}</p>
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground line-clamp-2">{c.description}</p>
-                <div className="flex gap-2 mt-auto">
-                  <Button size="sm" variant="outline" className="glass-card flex-1" onClick={() => setLessonsFor(c)}>
-                    <ListVideo className="h-3.5 w-3.5" /> Lessons
-                  </Button>
-                  <Button size="sm" variant="outline" className="glass-card" onClick={() => setEditing(c)}>
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button size="sm" variant="outline" className="glass-card text-destructive" onClick={() => removeCourse(c.id)}>
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
+        <Tabs defaultValue="catalog">
+          <TabsList className="glass-card mb-6">
+            <TabsTrigger value="catalog"><BookOpen className="h-4 w-4" /> Catalog</TabsTrigger>
+            <TabsTrigger value="users"><UsersIcon className="h-4 w-4" /> Users</TabsTrigger>
+            <TabsTrigger value="insights"><BarChart3 className="h-4 w-4" /> Insights</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="catalog">
+            <div className="flex justify-end mb-4">
+              <Button
+                onClick={() => setEditing({ level: "Beginner", icon: "BookOpen", tags: [], sort_order: courses.length + 1 })}
+                className="bg-gradient-to-r from-primary to-accent"
+              >
+                <Plus className="h-4 w-4" /> New course
+              </Button>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {courses.map((c) => {
+                const Icon = getCourseIcon(c.icon);
+                return (
+                  <Card key={c.id} className="glass-card p-4 flex flex-col gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                        <Icon className="h-5 w-5 text-primary-foreground" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold truncate">{c.title}</p>
+                        <p className="text-xs text-muted-foreground">{c.level} · {c.duration}</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{c.description}</p>
+                    <div className="flex gap-2 mt-auto">
+                      <Button size="sm" variant="outline" className="glass-card flex-1" onClick={() => setLessonsFor(c)}>
+                        <ListVideo className="h-3.5 w-3.5" /> Lessons
+                      </Button>
+                      <Button size="sm" variant="outline" className="glass-card" onClick={() => setEditing(c)}>
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button size="sm" variant="outline" className="glass-card text-destructive" onClick={() => removeCourse(c.id)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="users"><UsersTab currentUserId={user.id} /></TabsContent>
+          <TabsContent value="insights"><InsightsTab /></TabsContent>
+        </Tabs>
       </div>
 
       {/* Course editor */}
@@ -352,5 +369,92 @@ function AdminPage() {
         </DialogContent>
       </Dialog>
     </AppLayout>
+  );
+}
+
+function InsightsTab() {
+  const fn = useServerFn(getAdminStats);
+  const { data, isLoading } = useQuery({ queryKey: ["admin-stats"], queryFn: () => fn({}) });
+  if (isLoading || !data) return <p className="text-sm text-muted-foreground">Loading…</p>;
+  const labels: Record<string, string> = {
+    profiles: "Users", courses: "Courses", lessons: "Lessons",
+    lesson_progress: "Lessons completed", certificates: "Certificates issued",
+    showcase_projects: "Showcase projects", interview_sessions: "Interview sessions",
+    mentors: "Mentors", mentor_bookings: "1:1 bookings",
+    notifications: "Notifications sent", chat_threads: "AI chat threads",
+  };
+  return (
+    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      {Object.entries(data.counts).map(([k, v]) => (
+        <Card key={k} className="glass-card p-4">
+          <p className="text-xs text-muted-foreground">{labels[k] ?? k}</p>
+          <p className="text-3xl font-bold gradient-text mt-1">{v}</p>
+        </Card>
+      ))}
+      <Card className="glass-card p-4 sm:col-span-2 lg:col-span-4">
+        <p className="text-sm font-semibold mb-3">Top learners by XP</p>
+        <div className="space-y-2">
+          {data.topXp.map((s: any, i: number) => (
+            <div key={s.user_id} className="flex items-center justify-between text-sm">
+              <span className="font-mono text-xs text-muted-foreground">#{i + 1} · {s.user_id.slice(0, 8)}</span>
+              <span className="font-semibold">{s.xp} XP · 🔥 {s.current_streak}</span>
+            </div>
+          ))}
+          {data.topXp.length === 0 && <p className="text-xs text-muted-foreground">No activity yet.</p>}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function UsersTab({ currentUserId }: { currentUserId: string }) {
+  const qc = useQueryClient();
+  const listFn = useServerFn(listUsers);
+  const setAdminFn = useServerFn(setUserAdmin);
+  const { data: users = [], isLoading } = useQuery({ queryKey: ["admin-users"], queryFn: () => listFn({}) });
+
+  const toggleAdmin = async (userId: string, currentlyAdmin: boolean) => {
+    try {
+      await setAdminFn({ data: { userId, makeAdmin: !currentlyAdmin } });
+      toast.success(currentlyAdmin ? "Admin removed" : "Admin granted");
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed");
+    }
+  };
+
+  if (isLoading) return <p className="text-sm text-muted-foreground">Loading…</p>;
+
+  return (
+    <Card className="glass-card overflow-hidden">
+      <div className="divide-y divide-border/40">
+        {users.map((u: any) => {
+          const isAdmin = u.roles.includes("admin");
+          const isSelf = u.id === currentUserId;
+          return (
+            <div key={u.id} className="flex items-center gap-3 p-3">
+              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground text-sm font-bold">
+                {(u.display_name ?? "?").slice(0, 1).toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">
+                  {u.display_name ?? "Learner"} {isSelf && <span className="text-xs text-muted-foreground">(you)</span>}
+                </p>
+                <p className="text-xs text-muted-foreground">{u.xp} XP · 🔥 {u.streak}</p>
+              </div>
+              {isAdmin && <Badge className="bg-gradient-to-r from-primary to-accent text-primary-foreground">Admin</Badge>}
+              <Button
+                size="sm" variant="outline" className="glass-card"
+                disabled={isSelf && isAdmin}
+                onClick={() => toggleAdmin(u.id, isAdmin)}
+              >
+                {isAdmin ? <><ShieldOff className="h-3.5 w-3.5" /> Revoke</> : <><Shield className="h-3.5 w-3.5" /> Make admin</>}
+              </Button>
+            </div>
+          );
+        })}
+        {users.length === 0 && <p className="text-sm text-muted-foreground text-center py-6">No users yet.</p>}
+      </div>
+    </Card>
   );
 }
