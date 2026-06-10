@@ -167,53 +167,68 @@ function AdminPage() {
   return (
     <AppLayout>
       <div className="px-6 py-8 max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <ShieldCheck className="h-6 w-6 text-primary" />
               <h1 className="text-3xl font-bold">Admin</h1>
               <Badge className="bg-gradient-to-r from-primary to-accent text-primary-foreground">Owner</Badge>
             </div>
-            <p className="text-muted-foreground text-sm">Manage the course catalog. Changes go live instantly.</p>
+            <p className="text-muted-foreground text-sm">Manage the catalog, users, and view platform insights.</p>
           </div>
-          <Button
-            onClick={() => setEditing({ level: "Beginner", icon: "BookOpen", tags: [], sort_order: courses.length + 1 })}
-            className="bg-gradient-to-r from-primary to-accent"
-          >
-            <Plus className="h-4 w-4" /> New course
-          </Button>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {courses.map((c) => {
-            const Icon = getCourseIcon(c.icon);
-            return (
-              <Card key={c.id} className="glass-card p-4 flex flex-col gap-3">
-                <div className="flex items-start gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                    <Icon className="h-5 w-5 text-primary-foreground" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold truncate">{c.title}</p>
-                    <p className="text-xs text-muted-foreground">{c.level} · {c.duration}</p>
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground line-clamp-2">{c.description}</p>
-                <div className="flex gap-2 mt-auto">
-                  <Button size="sm" variant="outline" className="glass-card flex-1" onClick={() => setLessonsFor(c)}>
-                    <ListVideo className="h-3.5 w-3.5" /> Lessons
-                  </Button>
-                  <Button size="sm" variant="outline" className="glass-card" onClick={() => setEditing(c)}>
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button size="sm" variant="outline" className="glass-card text-destructive" onClick={() => removeCourse(c.id)}>
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
+        <Tabs defaultValue="catalog">
+          <TabsList className="glass-card mb-6">
+            <TabsTrigger value="catalog"><BookOpen className="h-4 w-4" /> Catalog</TabsTrigger>
+            <TabsTrigger value="users"><UsersIcon className="h-4 w-4" /> Users</TabsTrigger>
+            <TabsTrigger value="insights"><BarChart3 className="h-4 w-4" /> Insights</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="catalog">
+            <div className="flex justify-end mb-4">
+              <Button
+                onClick={() => setEditing({ level: "Beginner", icon: "BookOpen", tags: [], sort_order: courses.length + 1 })}
+                className="bg-gradient-to-r from-primary to-accent"
+              >
+                <Plus className="h-4 w-4" /> New course
+              </Button>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {courses.map((c) => {
+                const Icon = getCourseIcon(c.icon);
+                return (
+                  <Card key={c.id} className="glass-card p-4 flex flex-col gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                        <Icon className="h-5 w-5 text-primary-foreground" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold truncate">{c.title}</p>
+                        <p className="text-xs text-muted-foreground">{c.level} · {c.duration}</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{c.description}</p>
+                    <div className="flex gap-2 mt-auto">
+                      <Button size="sm" variant="outline" className="glass-card flex-1" onClick={() => setLessonsFor(c)}>
+                        <ListVideo className="h-3.5 w-3.5" /> Lessons
+                      </Button>
+                      <Button size="sm" variant="outline" className="glass-card" onClick={() => setEditing(c)}>
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button size="sm" variant="outline" className="glass-card text-destructive" onClick={() => removeCourse(c.id)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="users"><UsersTab currentUserId={user.id} /></TabsContent>
+          <TabsContent value="insights"><InsightsTab /></TabsContent>
+        </Tabs>
       </div>
 
       {/* Course editor */}
